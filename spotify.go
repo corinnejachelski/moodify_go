@@ -91,22 +91,21 @@ func callSpotifyAPI(userInput string) string {
 	}
 }
 
-// func getRandomMoodPlaylist() string {
+func getRandomMoodPlaylist() string {
 
-// 	spot := spotify.New("760873230dcd4368bccc0ed1cf4bb536", "1eb159b774e54e049e403b65a4c668e4")
+	authorized, _ := spot.Authorize()
 
-// 	authorized, _ := spot.Authorize()
+	if authorized {
 
-// 	if authorized {
-
-// 		// payload := "mood/playslists"
+		// payload := "mood/playslists"
 			
-// 		response, err := spot.Request("GET", "browse/categories/%s", nil, "mood", "playlists")
-// 		fmt.Println(err)
+		response, err := spot.Request("GET", "browse/categories/mood/playlists%s", nil, nil)
+		fmt.Println(err)
+		fmt.Println(string(response))
 			
-// 		return string(response)
-// 	} else {
-// 		return "Not authorized"
-// 	}
-// }
+		return string(response)
+	} else {
+		return "Not authorized"
+	}
+}
 

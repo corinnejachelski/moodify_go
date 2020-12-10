@@ -7,11 +7,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strings"
+	"os"
 )
 
-var twilioNum string = "+19596006663"
-var accountSid string =  "AC8a655345de45cf94a4dda3cc7d3a5ca3"
-var authToken string = "d0b90e20a14bdd6f642a77ede3692d5a"
+var twilioNum string = os.Getenv("TWILIO_NUM")
+var accountSid string =  os.Getenv("TWILIO_SID")
+var authToken string = os.Getenv("TWILIO_AUTH_TOKEN")
 
 func sendSMS(w http.ResponseWriter, text string, recipient string) {
 	resp := twiml.NewResponse()
@@ -35,9 +36,9 @@ func inboundSMSHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	fmt.Println("received this message", body, "from", sender)
 
 	switch body {
-	// case "moodify":
-	// 	responseBody := getRandomMoodPlaylist()
-	// 	sendSMS(w, responseBody, sender)
+	case "moodify":
+		responseBody := getRandomMoodPlaylist()
+		sendSMS(w, responseBody, sender)
 
 	default:
 		responseBody := checkMoodsData(body)
@@ -46,22 +47,3 @@ func inboundSMSHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 
 }
-
-// func outboundSMSHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
-
-// 	client := twilio.NewClient(accountSid, authToken, nil)
-
-// 	// Send a message
-// 	msg, err := client.Messages.SendMessage(twilioNum, "+14104874686", "Sent via go :) ✓", nil)
-
-// 	fmt.Fprintf(w, "Sent a message")
-
-// 	if err == nil {
-// 		fmt.Println("status >>>", msg.Status)
-// 		fmt.Println("body >>>", msg.Body)
-// 		fmt.Println("res >>>", r)
-// 	} else {
-// 		fmt.Println("error >>>", err)
-// 	}
-// }
