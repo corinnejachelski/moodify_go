@@ -7,51 +7,62 @@ import (
 	"github.com/buger/jsonparser"
 	"math/rand"
 	"time"
+	"os"
 )
+
+// Create a new spotify object
+// pass in client ID, client secret
+var spotifyClient = os.Getenv("SPOTIFY_CLIENT_ID")
+var spotifySecret = os.Getenv("SPOTIFY_SECRET")
+	
+var spot = spotify.New(spotifyClient, spotifySecret)
 
 var moods = make(map[string][]string)
 
 // break down functions getUserMood and getRandomMood (if input is moodify)
 
 func checkMoodsData(userInput string) string {
+
+	// check if userInput is already key in moods, return link and skip API call
 	if _, ok := moods[userInput]; ok {
 
+		// number of links in vals list
 		lenVals := len(moods[userInput])
 
+		// need to seed in file so that random val is not the same every time
 		rand.Seed(time.Now().UnixNano())
 		random := rand.Intn(lenVals)
 
 		return (moods[userInput][random])
+
 	} else {
+		// call Spotify API if not in data
 		return callSpotifyAPI(userInput)
 	}
 }
 
 
 func callSpotifyAPI(userInput string) string {
-
-
-	// Create a new spotify object
-	// pass in client ID, client secret
 	
-	spot := spotify.New("760873230dcd4368bccc0ed1cf4bb536", "1eb159b774e54e049e403b65a4c668e4")
-
 	// Authorize against Spotify first
 	authorized, _ := spot.Authorize()
 	if authorized {
 
-			// check if userInput in moods, return link and skip API call
+		// if userInput == "moodify" {
+		// 	// call Spotify API to get playlists from their categories/mood endpoint (random moods)
+		// 	response := getRandomMoodPlaylist()
 
-		// else
-		// create payload for API request with userInput as search query
+		// } else {
+			// call API with user input to search endpoint for playlists
 		payload := "?q=" + userInput + "&type=playlist"
-		// need to add in error handling if search/response not valid
+		
 		response,_ := spot.Request("GET", "search/%s", nil, payload)
-		// if jsonparse "playlists" "total" = 0
+	
 
 		totalItemsByte, _, _, _ := jsonparser.Get(response, "playlists", "total")
 		totalItems := string(totalItemsByte)
 
+		// if search does not return any items
 		if totalItems == string('0') {
 			return "Sorry, no playlists for this search. Try something else."
 		} else {
@@ -60,7 +71,7 @@ func callSpotifyAPI(userInput string) string {
 				// get Spotify url for each object
 				linkByte, _ ,_ ,_ := jsonparser.Get(value, "external_urls", "spotify")
 				link := string(linkByte)
-				// add link to map for given user input
+				// add url to map for given user input
 				moods[userInput] = append(moods[userInput], link)
 				}, "playlists", "items")
 		}
@@ -72,11 +83,30 @@ func callSpotifyAPI(userInput string) string {
 		random := rand.Intn(lenVals)
 		fmt.Println(random)
 
+		// return a single link relevant to user's initial search
 		return (moods[userInput][random])
 			
 	} else {
-		return "Sorry, we couldn't authorize Spotify"
+		return "Sorry, we couldn't authorize Spotify at this time."
 	}
 }
 
+// func getRandomMoodPlaylist() string {
+
+// 	spot := spotify.New("760873230dcd4368bccc0ed1cf4bb536", "1eb159b774e54e049e403b65a4c668e4")
+
+// 	authorized, _ := spot.Authorize()
+
+// 	if authorized {
+
+// 		// payload := "mood/playslists"
+			
+// 		response, err := spot.Request("GET", "browse/categories/%s", nil, "mood", "playlists")
+// 		fmt.Println(err)
+			
+// 		return string(response)
+// 	} else {
+// 		return "Not authorized"
+// 	}
+// }
 

@@ -35,9 +35,9 @@ func inboundSMSHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	fmt.Println("received this message", body, "from", sender)
 
 	switch body {
-	case "moodify":
-		// textBody = getRandomMood()
-		sendSMS(w, "Text me when you are leaving!", sender)
+	// case "moodify":
+	// 	responseBody := getRandomMoodPlaylist()
+	// 	sendSMS(w, responseBody, sender)
 
 	default:
 		responseBody := checkMoodsData(body)
