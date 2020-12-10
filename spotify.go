@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"time"
 	"os"
+	"io/ioutil"
 )
 
 // Create a new spotify object
@@ -26,57 +27,63 @@ func checkMoodsData(userInput string) string {
 		linkToSend := returnLink(userInput)
 
 		return linkToSend
-
+	// call Spotify API if not in data
 	} else {
-		// call Spotify API if not in data
-		return callSpotifyAPI(userInput)
+
+		response := callSpotifyAPI(userInput)
+		linktoSend := sendLink(response, userInput)
+
+		return linktoSend
 	}
 }
 
 
-func callSpotifyAPI(userInput string) string {
+func callSpotifyAPI(userInput string) []byte {
 	
 	// Authorize against Spotify first
 	authorized, _ := spot.Authorize()
 	if authorized {
 
-		// if userInput == "moodify" {
-		// 	// call Spotify API to get playlists from their categories/mood endpoint (random moods)
-		// 	response := getRandomMoodPlaylist()
+		var response []byte
 
-		// } else {
-			// call API with user input to search endpoint for playlists
-		payload := "?q=" + userInput + "&type=playlist"
-		
-		response,_ := spot.Request("GET", "search/%s", nil, payload)
-	
-
-		totalItemsByte, _, _, _ := jsonparser.Get(response, "playlists", "total")
-		totalItems := string(totalItemsByte)
-
-		// if search does not return any items
-		if totalItems == string('0') {
-			return "Sorry, no playlists for this search. Try something else."
+		if userInput == "moodify" {
+			// call Spotify API to get playlists from their categories/mood endpoint (random moods)
+			response = getRandomMoodPlaylist()
 		} else {
-			// use jsonparser library to iterate through each object in items array 
-			jsonparser.ArrayEach(response, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-				// get Spotify url for each object
-				linkByte, _ ,_ ,_ := jsonparser.Get(value, "external_urls", "spotify")
-				link := string(linkByte)
-				// add url to map for given user input
-				moods[userInput] = append(moods[userInput], link)
-				}, "playlists", "items")
-		}
+			// call API with user input to search endpoint for playlists
+			payload := "?q=" + userInput + "&type=playlist"
 		
-		linkToSend := returnLink(userInput)
+			response,_ = spot.Request("GET", "search/%s", nil, payload)
+		}
 
-		return linkToSend
-			
+		return response	
 	} else {
-		return "Sorry, we couldn't authorize Spotify at this time."
+		return []byte("Sorry, we can't authorize Spotify at this time.")
 	}
 }
 
+func parseJson (response []byte, userInput string) int {
+
+	totalItemsByte, _, _, _ := jsonparser.Get(response, "playlists", "total")
+	totalItems := string(totalItemsByte)
+
+	// if search does not return any items
+	if totalItems == string('0') {
+		return 0
+	} else {
+		// use jsonparser library to iterate through each object in items array 
+		jsonparser.ArrayEach(response, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			// get Spotify url for each object
+			linkByte, _ ,_ ,_ := jsonparser.Get(value, "external_urls", "spotify")
+			link := string(linkByte)
+			// add url to map for given user input
+			moods[userInput] = append(moods[userInput], link)
+			}, "playlists", "items")
+
+		return 1
+	}
+
+}
 
 func returnLink(userInput string) string {
 
@@ -91,23 +98,41 @@ func returnLink(userInput string) string {
 
 }
 
+func sendLink(response []byte, userInput string) string{
 
-func getRandomMoodPlaylist() string {
+		if string(response) == "Sorry, we can't authorize Spotify at this time." {
 
-	authorized, authErr := spot.Authorize()
-	fmt.Println(authErr)
+			return string(response)
+		} else {
+			checkResponse := parseJson (response, userInput)
 
-	if authorized {
+			if checkResponse == 0 {
 
-		// payload := "mood/playslists"
-			
-		response, err := spot.Request("GET", "browse/%s", nil, "categories", "mood", "playlists")
-		fmt.Println(err)
-		fmt.Println(response)
-			
-		return "this is a test"
-	} else {
-		return "Not authorized"
-	}
+				return "Sorry, no playlists matched your search. Try another."
+			} else {
+				linkToSend := returnLink(userInput)
+
+				return linkToSend
+			}
+		}		
+}
+
+
+func getRandomMoodPlaylist() []byte {
+
+	// Open jsonFile of playlists
+    response, err := os.Open("mood_playlists.json")
+
+    // if we os.Open returns an error then handle it
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println("Successfully Opened users.json")
+    // defer the closing of our jsonFile so that we can parse it later on
+    defer response.Close()
+
+    byteValue, _ := ioutil.ReadAll(response)
+
+    return byteValue		
 }
 

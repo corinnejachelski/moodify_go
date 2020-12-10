@@ -34,15 +34,9 @@ func parseAndSendSMS(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 	fmt.Println("received this message", body, "from", sender)
 
-	switch body {
-	case "moodify":
-		responseBody := getRandomMoodPlaylist()
-		sendSMS(w, responseBody, sender)
+	responseBody := checkMoodsData(body)
+	sendSMS(w, responseBody, sender)
 
-	default:
-		responseBody := checkMoodsData(body)
-		sendSMS(w, responseBody, sender)
-
-	}
+	
 
 }
