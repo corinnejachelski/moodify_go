@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/rapito/go-spotify/spotify"
 	"fmt"
-	// "encoding/json"
 	"github.com/buger/jsonparser"
 	"math/rand"
 	"time"
@@ -14,26 +13,19 @@ import (
 // pass in client ID, client secret
 var spotifyClient = os.Getenv("SPOTIFY_CLIENT_ID")
 var spotifySecret = os.Getenv("SPOTIFY_SECRET")
-	
 var spot = spotify.New(spotifyClient, spotifySecret)
 
 var moods = make(map[string][]string)
 
-// break down functions getUserMood and getRandomMood (if input is moodify)
 
 func checkMoodsData(userInput string) string {
 
 	// check if userInput is already key in moods, return link and skip API call
 	if _, ok := moods[userInput]; ok {
 
-		// number of links in vals list
-		lenVals := len(moods[userInput])
+		linkToSend := returnLink(userInput)
 
-		// need to seed in file so that random val is not the same every time
-		rand.Seed(time.Now().UnixNano())
-		random := rand.Intn(lenVals)
-
-		return (moods[userInput][random])
+		return linkToSend
 
 	} else {
 		// call Spotify API if not in data
@@ -76,34 +68,44 @@ func callSpotifyAPI(userInput string) string {
 				}, "playlists", "items")
 		}
 		
-		lenVals := len(moods[userInput])
+		linkToSend := returnLink(userInput)
 
-		// need to Seed program to not get same random num every time
-		rand.Seed(time.Now().UnixNano())
-		random := rand.Intn(lenVals)
-		fmt.Println(random)
-
-		// return a single link relevant to user's initial search
-		return (moods[userInput][random])
+		return linkToSend
 			
 	} else {
 		return "Sorry, we couldn't authorize Spotify at this time."
 	}
 }
 
+
+func returnLink(userInput string) string {
+
+	lenVals := len(moods[userInput])
+
+	// need to seed in file so that random val is not the same every time
+	rand.Seed(time.Now().UnixNano())
+	random := rand.Intn(lenVals)
+
+	// return a single link relevant to user's initial search
+	return (moods[userInput][random])
+
+}
+
+
 func getRandomMoodPlaylist() string {
 
-	authorized, _ := spot.Authorize()
+	authorized, authErr := spot.Authorize()
+	fmt.Println(authErr)
 
 	if authorized {
 
 		// payload := "mood/playslists"
 			
-		response, err := spot.Request("GET", "browse/categories/mood/playlists%s", nil, nil)
+		response, err := spot.Request("GET", "browse/%s", nil, "categories", "mood", "playlists")
 		fmt.Println(err)
-		fmt.Println(string(response))
+		fmt.Println(response)
 			
-		return string(response)
+		return "this is a test"
 	} else {
 		return "Not authorized"
 	}

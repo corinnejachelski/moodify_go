@@ -14,7 +14,7 @@ func main() {
 
 	router := httprouter.New()
 
-	router.POST("/receiveSMS", inboundSMSHandler)
+	router.POST("/receiveSMS", parseAndSendSMS)
 
 	// router.GET("/sendSMS", outboundSMSHandler)
 

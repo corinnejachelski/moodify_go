@@ -26,8 +26,7 @@ func sendSMS(w http.ResponseWriter, text string, recipient string) {
 }
 
 
-
-func inboundSMSHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func parseAndSendSMS(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	sender := r.FormValue("From")
 	// make all inputs lowercase to avoid case sensitive duplications
