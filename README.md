@@ -7,7 +7,7 @@ Use cases:
 2. Text "moodify" to receieve a random Spotify playlist link
 
 Example:
-(https://github.com/corinnejachelski/moodify_go/blob/master/moodify_example.png)
+![Screenshot](https://github.com/corinnejachelski/moodify_go/blob/master/moodify_example.png)
 
 ### Tech
 
