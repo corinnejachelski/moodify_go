@@ -6,6 +6,9 @@ Use cases:
 1. Text any keyword(s) to receive a link to a relevant Spotify playlist (containing the keyword)
 2. Text "moodify" to receieve a random Spotify playlist link
 
+Example:
+(https://github.com/corinnejachelski/moodify_go/blob/master/moodify_example.png)
+
 ### Tech
 
 Moodify is written in Golang. It utilizes the [go-spotify](https://github.com/rapito/go-spotify) library
